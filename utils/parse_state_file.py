@@ -23,7 +23,7 @@ def validate_state_data(state_data: dict[str, str]) -> tuple[bool, str]:
         if key not in state_data:
             return (False, f"Key {key} is required.")
 
-    # WIP Put specific requirements here
+    # * Put specific requirements here
 
     return (True, "")
 
