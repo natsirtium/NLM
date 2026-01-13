@@ -20,12 +20,24 @@ class Job:
         type: Job_Types,
         staged_file_path: str | None = None,
         client: Client | None = None,
-        file_uuid: UUID | None = None,
+        file_uuids: list[UUID] | None = None,
     ):
         match type:
             case Job_Types.RECEIVE_AND_STAGE:
+                if not self.client:
+                    logging.error(
+                        "Attempted to start a RECEIVE_AND_STAGE job without a client."
+                    )
+                    return False
+
+                if not self.file_uuids:
+                    logging.error(
+                        "Attempted to start a RECEIVE_AND_STAGE job without file_uuids."
+                    )
+                    return False
+
                 self.client = client
-                self.file_uuid = file_uuid
+                self.file_uuids = file_uuids
 
             case Job_Types.SAVE_STAGED_FILE:
                 if not staged_file_path:
