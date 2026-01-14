@@ -11,7 +11,9 @@ from . import server_io
 class Job_Types(Enum):
     RECEIVE_AND_STAGE = auto()
     SAVE_STAGED_FILE = auto()
-    other = auto()
+    GET_LATEST = auto()
+    CHECKOUT = auto()
+    CHECKIN = auto()
 
 
 class Job:
@@ -61,6 +63,7 @@ class Job:
 class Worker_Manager:
     def __init__(self, task_queue: mp.JoinableQueue, workers: list[mp.Process]):
         self.task_queue = task_queue
+        self.client_manager_threads = list()
 
 
 def do_job(job: Job) -> None:

@@ -11,10 +11,17 @@ import socket
 import threading
 import uuid
 
-from .worker_manager import Job, Job_Types
+from .worker_manager import Job, Job_Types, Worker_Manager
 
 HOST = "0.0.0.0"
 PORT = 9000
+
+
+class Server:
+    def __init__(self, socket: socket.socket, host: str, port: int):
+        self.socket = socket
+        self.host = host
+        self.port = port
 
 
 class Client:
@@ -22,6 +29,7 @@ class Client:
         self.connection_open = True
         self.conn = conn
         self.addr = addr
+
 
 class Communication:
     def __init__(self, u_message: str, client: Client):
@@ -74,14 +82,14 @@ class Communication:
         return True
 
 
-def init_server() -> socket.socket:
+def init_server() -> Server:
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((HOST, PORT))
     server.listen()
 
     logging.info(f"Server started with host {HOST} on port {PORT}.")
 
-    return server
+    return Server(server, HOST, PORT)
 
 
 def client_manager_thread(conn, addr, task_queue: mp.JoinableQueue):
@@ -104,19 +112,16 @@ def client_manager_thread(conn, addr, task_queue: mp.JoinableQueue):
         logging.info(f"Disconnected from {addr}")
 
 
-def server_thread(
-    server: socket.socket,
-    task_queue: mp.JoinableQueue,
-    client_manager_threads: list[threading.Thread],
-):
+def server_thread(server: socket.socket, worker_manager: Worker_Manager):
     while True:
         conn, addr = server.accept()
 
         thread = threading.Thread(
-            target=lambda: client_manager_thread(conn, addr, task_queue), daemon=True
+            target=lambda: client_manager_thread(conn, addr, worker_manager.task_queue),
+            daemon=True,
         )
         thread.start()
-        client_manager_threads.append(thread)
+        worker_manager.client_manager_threads.append(thread)
 
 
 def receive_and_stage(job: Job):
