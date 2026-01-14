@@ -1,0 +1,11 @@
+# App state
+state.json
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Editor / env
+.zed/
+.venv/
